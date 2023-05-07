@@ -1,4 +1,3 @@
-import org.graalvm.compiler.hotspot.nodes.CurrentJavaThreadNode.get
 
 fun main() {
     NameService(5)
