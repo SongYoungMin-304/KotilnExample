@@ -130,3 +130,134 @@ date = 17 // 이건 형태가 변경되는 거여서 안된다.
 
 - 타입 추론으로 String으로 표시를 안해도 String 으로 인지하는 것
 - String 을 안하면 헷갈리는 부분도 있어서 팀 규칙으로 사용하게 하기도 한다.
+
+
+## 조건문과 루프문
+
+**조건문(if)**
+
+```kotlin
+var max = a
+if(a < b) max = b
+
+var max: Int
+if(a > b){
+  max = a
+} else {
+  max = b
+}
+
+// 식표현으로 3항 연산자 처럼 사용
+val max = if(a > b) a else b
+```
+
+```kotlin
+val max = if(a > b){
+  print("Choose a")
+  a
+} else{
+  print("Choose b")
+  b
+}
+
+val max = if (a > b) { // 컴파일 오류 발생, return 하는것과 다름, 반환하는 것
+    print("Choose a")
+    return a 
+} else {
+    print("Choose b")
+    return b
+}
+```
+
+**다중 선택문(when)**
+
+```kotlin
+var x: Int = 2
+
+when (x) {
+  1 -> print("x == 1")
+  2 -> print("x == 2")
+  else -> {
+    print("x is neither 1 nor 2")
+  }
+```
+
+```kotlin
+var x: Int = 2
+var s: Int = 2
+val validNumbers: Array<Int> = arrayOf(1,2,3)
+
+    when (x) {
+        0, 1 -> print("x == 0 or x == 1")
+        else -> print("otherwise")
+    }
+
+    when (x) {
+        parseInt(s) -> print("s encodes x")
+        else -> print("s does not encode x")
+    }
+
+    when (x) {
+        in 1..10 -> print("x is in the range")
+        in validNumbers -> print("x is valid")
+        !in 10..20 -> print("x is outside the range")
+        else -> print("none of the above")
+    }
+```
+
+```kotlin
+fun Request.getBody() =
+    when (val response = executeRequest()) {
+        is Success -> response.body
+        is HttpError -> throw HttpException(response.status)
+    }
+```
+
+- 함수 실행 결과에 따라서 성공 실패 분기도 가능
+
+**반복문 (for, while)**
+
+**for**
+
+```kotlin
+val array = arrayOf(1,2,3,4,5)
+for(item in array){
+  print(item) // 결과 12345
+}
+
+for(i in 1..3){
+  println(i) // 결과 : 123
+}
+
+for(i in 6 downTo 0 step 2){
+  println(i) // 결과 : 6420
+}
+
+val array = arrayOf(1, 2, 3, 4, 5)
+for (index in array.indices) {
+   print(array[index]) //결과 : 12345
+}
+
+for((index, value) in array.withIndex()){
+  println("$index 번째는 $value 값을 가집니다."))
+// 결과 : 0번째는 1값을 가집니다.
+// 결과 : 1번째는 2값을 가집니다.
+// 결과 : 2번째는 3값을 가집니다.
+// 결과 : 3번째는 4값을 가집니다.
+// 결과 : 4번째는 5값을 가집니다.
+
+```
+
+**while**
+
+```kotlin
+var x: Int = 5
+while(x > 0) {
+   x--
+}
+
+var y: Int = 5
+do{
+  val y = retrieveData()
+} while (y !=null)
+```
