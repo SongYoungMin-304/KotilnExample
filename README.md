@@ -261,3 +261,90 @@ do{
   val y = retrieveData()
 } while (y !=null)
 ```
+
+# 함수
+
+
+![image](https://user-images.githubusercontent.com/56577599/236842226-cd735aea-c5aa-4d3b-a67e-03b00d1ba83d.png)
+
+
+- 키워드 - 함수를 선언하시기 위해서는 먼저 fun 키워드를 통해 함수를 선언하겠다는 것을 명시
+- 함수 이름 - 키워드 이후에 한칸 띄우고 함수이름을 명시해야함
+- 입력값 - 입력받을 값들을 나타냅니다. 이 값은 생략 가능하며, 여러 값일 경우 , 를 통해서 이어붙일 수 있습니다.
+- 리턴타입 - 해당 함수의 결과를 반화할 타입을 나타내는 부분입니다. 생략 가능하면 생략하면 Unit 타입의 아무것도 반환하지 않는 타입을 가지게 됩니다.
+- 리턴 값 - { } 블럭 사이에 함수의 본문이 들어올 수 있습니다
+(함수 본문을 마무리할 때 return 키워드를 사용하여 값을 반환할 수 있습니다.)
+
+```kotlin
+val double = double(5)
+println("값 = $double")
+
+fun double(x: Int): Int {
+  return x * 2
+}
+```
+
+**파라미터의 기본 값**
+
+```kotlin
+val double2 = double2() // 사용하는 곳에서 파라미터 입력하지 않음
+println("값 = $double2") // 결과 : 값 = 20
+
+fun double2(x: Int = 10): Int { // 파라미터 x에 = 10 를 추가하여 입력값이 없으면 기본값으로 10을 할당한다고 명시
+    return x * 2
+}
+```
+
+**이름 명시 파라미터**
+
+```kotlin
+val double = double(y = 2, x = 5)
+prtinln("값 = $double") // 결과 : 값  = 10
+
+fun double(x: Int = 10, y: Int): Int{
+   return x * y
+}
+```
+
+**단일 표현 식(Single Expression)**
+
+```kotlin
+val double1 = double_1(x = 5, y = 2)
+    val double2 = double_2(x = 5, y = 2)
+    println("값_1 = $double1") // 결과 : 값_1 = 10
+    println("값_2 = $double2") // 결과 : 값_2 = 10
+
+fun double_1(x: Int = 10, y: Int): Int {
+    return x * y
+}
+
+fun double_2(x: Int = 10, y: Int): Int = x * y // 단일 표현식으로 {}과 return을 생략
+```
+
+**지역 함수, 클로저**
+
+```kotlin
+val double1 = double_1(x = 5, y = 2)
+
+println("값_1 = $double1") 
+
+//double_2(x = 5, y = 2) 컴파일 에러
+
+fun double_1(x: Int = 10, y: Int): Int {
+   fun double_2(x: Int, y: Int) = x * y
+   return x * y * double_2(x, y)
+}
+```
+
+**Trailling Coomma**
+
+```kotlin
+fun double_1(
+   x: Int = 10,
+   y: Int,
+): Int {
+    return x * y
+}
+```
+
+- 추가적인 변수가 없음에도 , 가 찍혀 있슴
