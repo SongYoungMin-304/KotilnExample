@@ -466,3 +466,148 @@ set(value) {
    setDataFromString(value)
 }
 ```
+# 클래스 -상속과 인터페이스
+※상속은 생략할 수 있음
+
+```java
+class NameService constructor(name: String)
+class NameService(name: String)
+// 동일
+```
+
+## 상속
+
+```java
+open class MappingBaseService {
+     fun service(): String ="MappingBaseService"
+}
+
+class MappingService(val firstProperty: String) : MappingBaseService(){
+
+}
+
+-- 실행결과
+val mappingService = MappingService("H")
+println("service = ${mappingService.service()}")
+// 결과 : service = MappingBaseService
+```
+
+## 상속에서의 초기화 순서
+
+```java
+open class MappingBaseService {
+
+   init {
+       println("MappingBaseService initialize")
+   }
+   
+   fun service(): String ="MappingBaseService"
+}
+
+class MappingService(val firstProperty: String) : MappingBaseService() {
+
+   init {
+      println("MappingService initialize")
+   }
+{
+```
+
+```java
+val mappingService = MappingService("H") 
+// 결과 : MappingBaseService initialize
+//       MappingService initialize
+```
+
+- 클래스 상속에서 초기화는 부모 객체에서 먼저 이루어지고 이후 자식 객체에서 이루어 진다는 것을 알 수 있다.
+
+## 상속에서의 오버라이딩
+
+```java
+open class MappingBaseService [
+
+    open val firstProperty: String = "MappingBaseService property"
+
+    open fun service(): String{
+         return "MappingBaseService"
+    }
+}
+
+class MappingService(val firstProperty: String): MappingBaseService(){
+
+    override val firstProperty: String = "MappingService property"
+
+    override fun service(): String{ // 오버라이딩
+       return "MappingService"
+    }
+}
+
+-- 실행결과
+val mappingService = MappingService("H")
+println("service = ${mappingService.service()}")
+// 결과 : service = MappingService
+
+val mappingService = MappingService()
+println("service = ${mappingService.firstProperty}") 
+// 결과 : service = MappingService
+```
+
+- open 으로 열어서 자식 객체에서 오버라이딩 가능
+- 코틀린에서는 멤버변수도 오버라이딩 할 수 있다.
+- **추가적으로 부모 객체의 var 타입의 멤버변수는 val로 오버라이딩할 수 가능, 
+하지만 반대는 되지 않음.** 
+
+왜냐하면 var는 getter, setter를 모두 가지고 있지만 val는 getter만 가지고 있기 때문입니다. 또한 기본 생성자에 override를 이용하여 값을 가져오는 것도 가능합니다.
+
+## Any에 관하여
+
+- 코틀린의 모든 클래스는 명시적으로 특정 클래스를 상속 받지 않으면 Any 객체를 묵시적으로 상속
+- equals(), hashCode(), toString()
+
+```java
+public open class Any {
+
+public open operator fun equals(other: Any?): Boolean
+public open fun hashCode(): Int
+public open fun toString(): String
+}
+```
+
+## 인터페이스(interface)
+
+```java
+interface MyInterface{
+
+   val prop: Int
+   
+   open fun foo(){
+      print(prop) // optional body
+   }
+}
+
+class Child : MyInterface {
+
+    override val prop: Int = 29
+   
+    override fun foo(){
+       super.foo()
+       println("테스트영민)
+    }
+}
+
+-- 실행결과
+
+val child = Child()
+
+// MappingBaseService initialize 호출 이후
+// MappingService initialize 호출
+
+println("1번 service = ${child.prop}")
+
+child.foo()
+
+// 결과
+// 1번 service = 29
+// 29테스트영민
+```
+
+- 인터페이스에서 변수를 선언하거나 함수 내용을 쓸 수있으나 실제로 override를 해야 사용 할 수 있다.(open 도 필요 없음)
