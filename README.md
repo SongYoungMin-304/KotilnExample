@@ -348,3 +348,121 @@ fun double_1(
 ```
 
 - 추가적인 변수가 없음에도 , 가 찍혀 있슴
+
+# 클래스(Class)
+
+## 클래스(Class)
+
+클래스란 객체를 정의하는 틀 또는 설계라는 의미를 가지고 있습니다.
+
+![image](https://github.com/SongYoungMin-304/KotilnExample/assets/56577599/4accb242-f94a-4f20-b6c1-fef12aa8ca90)
+
+- 클래스 선언 키워드 
+- class 키워드를 통해 클래스를 선어할 수 있습니다.
+- 클래스 이름
+- 클래스 이름을 쓰며 일반적으로 파스칼케이스(PascalCase)를 이름 규칙으로 가져갑니다.
+- 기본 생성자
+- 클래스 이름 옆에 생성자 키워드 constructor을 넣어 생성자를 선언할 수 있습니다.
+- 기본적인 접근제어자는 public 이며 **public으로 사용할 때는 constructor을 생략하고 사용할 수 있습니다.**
+- 멤버변수
+- val 또는 var 키워드를 통해 내부 변수를 선언할 수 있습니다.
+- 초기화 블럭
+- 객체가 생성될때 초기화 블럭이 실행됩니다.
+- **실행 순서는 위에서 아래로 차례대로 실행되며 init 블럭에서는 해당 블럭보다 위에 선언되어있는 멤버볌수, 그리고 생성자 변수만을 사용할 수 있습니다.**
+- 내부함수
+- 클래스의 상태 업데이트 등을 캡슐화하여 사용하기 위해 클래스 내부에 함수를 선언할 수 있습니다.
+
+```kotlin
+class NameService constructor(name: String) {
+   private val firstPropery = "First propery: $name"
+
+   inti {
+      println("First initializer block $name")
+   }
+ 
+   fun printName(): String = this.firstProperty
+}
+
+-- 실행결과
+nameService("songyoungmin")
+// 결과 : First initializer block songyoungmin
+```
+
+## 생성자(constructor)
+
+```kotlin
+class NameService constructor(name: String){
+
+  constructor(value: Int) : this(value.toString()) {
+     println("Secondary constructor block that prints $value")
+
+  private val firstProperty ="First property: $name"
+
+  init {
+     println("First initialize block that prints $name")
+  }
+  
+  fun printName(): String = this.firstProperty
+}
+
+-- 실행결과
+ nameService(5)
+// First initializer block that prints 5
+// Secondary constructor block that prints 5
+```
+
+- 주 생성자와 보조 생성자로 나눌 수 있다.
+- 보조생성자의 매개변수는 주 생성자의 매개변수와 달라야 한다.
+
+## 멤버 변수(Properties)
+
+```kotlin
+class MappingService constructor(name: String){
+    val firstProperty: String = name
+}
+
+class MappingService(val firstProperty: String){
+
+}
+// 두개가 동일하다.
+
+val mappingService = MappingService("H")
+println("firstProperty = ${mappingService.firstProperty}")
+// 결과 : firstProperty 
+
+```
+
+- 매개변수를 받아서 처리할 수 도 있고 아니면 아예 선언 부분에 정의할 수도 있다.
+- 생성자를 생성하고 매개변수로 가져올 수 있다.
+
+ ※ 여기서 클래스의 변수에 직접 가져오는 것 인가?
+
+→ java로 치면 getter 를 사용 하는 것이다.(val 이여서 getter, var 이면 setter 이다.)
+
+```java
+public final class NameService {
+   @NotNull
+   private final String firstProperty;
+
+   @NotNull
+   public final String getFirstProperty() {
+      return this.firstProperty;
+   }
+
+   public MappingService(@NotNull String firstProperty) {
+      Intrinsics.checkNotNullParameter(firstProperty, "firstProperty");
+      super();
+      this.firstProperty = firstProperty;
+   }
+}
+```
+
+아래 처럼 커스텀 마이징도 가
+
+```java
+val firstProperty: String
+get() = this.toString()
+set(value) {
+   setDataFromString(value)
+}
+```
