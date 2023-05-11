@@ -611,3 +611,334 @@ child.foo()
 ```
 
 - 인터페이스에서 변수를 선언하거나 함수 내용을 쓸 수있으나 실제로 override를 해야 사용 할 수 있다.(open 도 필요 없음)
+
+
+# 클래스 -static 과 접근제어자
+
+## **정적 클래스 ( static class )**
+
+- 클래스 내부에 정적 클래스 및 변수를 선언하기 위해서는 companion 키워드를 사용하면 됩니다.
+- companion 클래스를 선언하고 그 내부에 변수 및 함수를 선언하면 이곳에 선언된 요소들은 객체를 만들지 않고도 바로 접근이 가능합니다.
+
+```kotlin
+class MappingService private constructor(
+   val name: String = DEFAULT_NAME
+) {
+
+    companion object {
+
+      fun create(): MappingService = MappingService()
+
+      fun create(name: String): MappingService = MappingService(name)
+
+      const val DEFAULT_NAME: String = "sabardada"
+   }
+}
+
+-- 실행
+fun main(){
+
+    val mappingService_1 = MappingService.create()
+   
+    println("mappingService_1 = ${mappingService_1.name}")
+
+    val mappingService_2 = MappingService.create("songyoungmin")
+   
+    println("mappingService_2 = ${mappingService_2.name}")
+
+    println("mappingService_3 = ${MappingService7.DEFAULT_NAME}")
+    
+}
+
+-- mappingService_1 = sabardada
+-- mappingService_2 = songyoungmin
+-- mappingService_3 = sabardada
+```
+
+- 생성자에 val name : String = DEFAULT_NAME 으로 해둔 부분은 아래의 내용과 같다
+
+```kotlin
+class MappingService constructor(name: String){
+    val firstProperty: String = name // 또는 DEFAULT_NAME 값, 매개변수가 없으면
+}
+```
+
+→ 즉 생성자의 디폴트 값이 존재하고 생성자의 매개변수가 있거나 없거나에 따라서 처리가능
+
+```kotlin
+companion object Factory{
+  ...
+}
+```
+
+- MappingService.Factory.create() 처럼 사용해도 된다.
+
+→ 자바로 바꾸면 아래의 내용과 같다.
+
+```java
+public final class MappingService {
+
+   @Nullable
+   private final String name;
+   @NotNull
+   public static final String DEFAULT_NAME = "sabardada";
+   @NotNull
+   public static final MappingService.Companion Companion = new MappingService.Companion((DefaultConstructorMarker)null);
+
+   @Nullable
+   public final String getName() {
+      return this.name;
+   }
+
+   private MappingService(String name) {
+      this.name = name;
+   }
+
+   // $FF: synthetic method
+   MappingService(String var1, int var2, DefaultConstructorMarker var3) {
+      if ((var2 & 1) != 0) {
+         var1 = "sabardada";
+      }
+
+      this(var1);
+   }
+
+   // $FF: synthetic method
+   public MappingService(String name, DefaultConstructorMarker $constructor_marker) {
+      this(name);
+   }
+
+   public static final class Companion {
+      @NotNull
+      public final MappingService create() {
+         return new MappingService((String)null, 1, (DefaultConstructorMarker)null);
+      }
+
+      @NotNull
+      public final MappingService create(@NotNull String name) {
+         Intrinsics.checkNotNullParameter(name, "name");
+         return new MappingService(name, (DefaultConstructorMarker)null);
+      }
+
+      private Companion() {
+      }
+
+      // $FF: synthetic method
+      public Companion(DefaultConstructorMarker $constructor_marker) {
+         this();
+      }
+   }
+}
+```
+
+## **컴파일 타임 상수(compile-time constants)**
+
+- 컴파일 타임 상수는 class 명세가 method 메모리 영역에 들어갈 때 함께 초기화 되어 객체를 만들지 않아도 사용할 수 있는 상수
+1. companion object를 클래스 내부에 선언 후 그 내부에 const val을 사용하는 방법
+
+```java
+class MappingService {
+   companion object {
+      const val DEFAULT_NAME: String = "sabardada"
+   }
+}
+```
+
+1. 클래스 밖에 top-level 에 const val을 선언하는 방법(top level 에 대해서 따로 설명)
+
+```java
+const val DEFAULT_NAME_2: String ="sabardada"
+
+class MappingService private constructor(
+  val name:String = DEFAULT_NAME_2
+}
+```
+
+1. object 클래스로 선언하여 그 안에 const val을 선언하는 방법
+
+```java
+object MappingBaserService{
+    const val DEFAULT_NAME_3: String ="sabardada"
+}
+```
+
+## **접근 제어자(Modifier)**
+
+- private - 클래스 외부에서 접근이 불가능합니다.
+- protected - 상속관계에 있는 외부에서는 접근이 가능합니다.
+- internal - 한 모듈안에서 라면 접근이 가능합니다.
+- public - 어디서든 접근이 가능합니다.
+
+```kotlin
+open class Outer {
+    private val a = 1
+    protected open val b = 2
+    internal val c = 3
+    val d = 4 // 기본값 : public
+   
+    protected class Nested {
+      public val e: Int = 5
+    }
+}
+
+class Subclass : Outer(){
+   // a는 private 이기 때문에 참조 불가
+   // b, c, d, e 는 참조가능
+
+   override val b = 5 //'b'는 protected 로 오버라이딩 가능
+}
+
+class Unreleated(o: Outer){
+   // o.a, o.b 는 접근 불가능
+   // o.c와 o.d는 접근 가능(같은 module)
+   // Outer, Nested 그리고 Nested::e 는 접근 불가
+}
+```
+
+# NPE
+
+- Null Pointer Exception
+
+자바에서 일반적으로 발생하는 npe
+
+```java
+public void test(String str){
+// str의 null 체크 없이 사용한다면 npe 발생 가능성 존재
+  if(str == null || str.equals("")){
+      //str을 이용한 동작
+  }
+}
+
+```
+
+코틀린에서 null은 어떻게 처리하는가?
+
+1) 일반적으로 코틀린에서 아래처럼 변수에 null을 대입하려고 하면 컴파일 에러가 발생
+
+```kotlin
+var name: String = "sabarada"
+name = null // 컴파일 에러 발생
+
+// null 을 허용하고 싶을 때는 
+var name: String? = "sabarada"
+name = null // OK
+```
+
+**※ null이 될 수 있는 타입을 주고 그 내부 함수를 호출하면 NPE 발생?**
+
+```kotlin
+var name: String? ="sabarada"
+var size= name.length // 컴파일 에러 발생
+```
+
+→ 컴파일 에러의 내용은 `Only safe (?.) or non-null asserted (!!.) calls are allowed on a nullable receiver of type String?` 입니다. 즉, null 허용 타입일 경우에는 타입 체크또는 더 명확한 명시를 하지 않으면 내부 함수 또는 변수를 호출할 수 없다는 내용입니다.
+
+## null 체크를 하는 방법
+
+**1) 조건문으로 체크하기**
+
+```kotlin
+var name: String? ="sabarada"
+if (name != null && name.isNotEmpty()) {
+    println("이름은 $name , 이름의 길이 = ${name.length}") // 결과 : 이름은 sabarada , 이름의 길이 = 8
+} else {
+    println("Empty string")
+}
+```
+
+- if / else 를 이용하여 name의 null 체크를 했기 때문에 위에서는 컴파일 에러가 발생하던 name.length 가 정상적으로 컴파일 되는 것으로 확인
+
+**2) 안전한 호출(safe call)**
+
+```kotlin
+var name: String? = "sabarada"
+var nullName: String? = null
+println("name = ${name?.length}") // 결과 : name = 8
+println("name = ${nullName?.length}") // 결과 : name = null
+```
+
+- 내부 함수 또는 변수를 호출 할 때 ?. 으로 호출합니다. 이렇게 하면 null 일 경우 null을 반환하며 그렇지 않을 경우 정상적으로 값을 반환합니다.
+
+```kotlin
+class OutterEntity(
+  val innerEntity: InnerEntity? = null
+){
+
+}
+
+class InnerEntity(
+  val name: String? = null
+){
+
+}
+
+// 호출 가능 방식
+val outterEntity: OutterEntity? = OutterEntity(InnerEntity("sabarada"))
+
+if(outterEntity != null && outterEntity.innerEntity !=null && outterEntity.innerEntity.name != null){
+   println("name = ${outterEntity.innerEntity.name}")
+} else {
+   println("name is null")
+}
+
+// ? 키워드를 사용한 방법
+val name = outterEntity?.innerEntity?.name
+println("name = $name") // 결과 name = sabarada
+
+```
+
+## 엘비스 연산자
+
+```kotlin
+val outterEntity: OutterEntity? = OutterEntity()
+
+val name = outterEntity?.innerEntity?.name ?: "default"
+println("name = $name") // 결과 : name = default
+```
+
+## The !! operator
+
+```kotlin
+val outterEntity: OutterEntity? = OutterEntity()
+
+val name = outterEntity!!.innerEntity!!.name // java.lang.NullPointerException
+```
+
+- NullPointerException 발생하고 프로그램은 종
+
+## 클래스 초기화 과정에서 발생할 수 있는 NPE
+
+```kotlin
+class Demo2 {
+    val some: Int
+    val someString: String
+
+    init {
+        fun Demo2.indirectSome() = some
+        fun Demo2.indirectSomeString() = someString
+        println(indirectSome()) // prints 0
+        println(indirectSomeString().replace("1", "2")) // someString은 초기화 되지 않았지만 간접적으로 접근하여 NPE가 발생할 수 있습니다.
+        some = 1
+        someString = ""
+    }
+}
+```
+
+- initialize block 에서 간접적으로 초기화 되지 않은 변수에 접근
+
+```kotlin
+abstract class Base {
+    val code: String = calculate()
+    abstract fun calculate(): String
+}
+
+class Derived(private val x: String) : Base() {
+    override fun calculate() = x
+}
+
+fun testIt() {
+    Derived("sabarada").code.replace("", "") // Expected: NPE 발생
+}
+```
+
+- 자식 클래스의 값을 부모클래스의 값으로 대입하고 있습니다. 따라서 초기화 순서에 의헤 code 에는 값이 "sabarada"가 아닌 null로 들어가게되며 사용함에 있어서 NPE가 발생하게 됩니다.
