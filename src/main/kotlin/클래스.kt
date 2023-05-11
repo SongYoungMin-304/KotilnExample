@@ -1,8 +1,8 @@
 
 fun main() {
-    NameService(5)
+    NameService("5")
 
-    MappingService(7)
+  /*  MappingService(7)
 
     defaultService("song")
 
@@ -15,7 +15,7 @@ fun main() {
 
 
     val mappingService4 = MappingService4("송영민");
-    println("test = ${mappingService4.firstProperty}")
+    println("test = ${mappingService4.firstProperty}")*/
 
 }
 

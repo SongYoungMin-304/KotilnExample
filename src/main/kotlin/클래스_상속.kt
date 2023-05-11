@@ -1,16 +1,3 @@
-fun main() {
-
-    val mappingService1 = MappingService1()
-
-    // MappingBaseService initialize 호출 이후
-    // MappingService initialize 호출
-
-    println("service = ${mappingService1.service()}")
-
-    println("service = ${mappingService1.firstProperty}")
-
-}
-
 // MappingBaserService 정의 open 을 통해3서 상속 가능하게 표시
 open class MappingBaseService {
 
@@ -62,7 +49,7 @@ interface MyInterface{
     get() = "foo"
 
 
-    fun foo(){
+     fun foo(){
         print(prop)
     }
 }
@@ -70,5 +57,22 @@ interface MyInterface{
 class Child : MyInterface{
 
     override val prop: Int = 29
+
+    override fun foo() {
+        super.foo()
+        println("테스트영민")
+    }
+}
+
+fun main() {
+
+    val child = Child()
+
+    // MappingBaseService initialize 호출 이후
+    // MappingService initialize 호출
+
+    println("1번 service = ${child.prop}")
+
+    child.foo()
 
 }
