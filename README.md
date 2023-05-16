@@ -1168,3 +1168,136 @@ MappingService("sabarada", 15)
 | with | this | Lambda result | No: takes the context object as an argument. |
 | apply | this | Context object | Yes |
 | also | it | Context object | Yes |
+
+# 연산자 오버로딩
+
+연산자 오버로딩이란 객체 지향 프로그래밍에서 다형성의 특별한 경우로 다른 연산자들이 함수 연산자를 통해서 구현을 할 때를 말한다.
+
+**- 이 말인 즉슨 +,- 등 과 같은 연산자가 어떤 값과 함께 사용하느냐에 따라서 다르게 동작할 수 있도록 그것을 커스터마이징 할 수 있다는 의미**
+
+- java에서도 연산자 오버로딩은 아니지만 같은 연산자에서 다르게 동작하는 예제가 있습니다.
+
+```kotlin
+String a ="sabarada is";
+String b = "karol";
+String result = a + " " + b; // sabarada is karol
+
+int c = 1;
+int d = 2;
+
+int result_2 = c + d //3
+```
+
+### 코틀린에서의 연산자 오버로딩
+
+```kotlin
+data class Price(val value: Int){
+   operator fun plus(b: Price): Price{
+        return Price(value + b.value)
+   }
+}
+
+val a: Price = Price(10)
+val b: Price = Price(50)
+val result: Price = a + b //결과 Price(60)
+
+```
+
+### 단항 연산자(Unary operations)
+
+```kotlin
+data class Price(val value: Int) {
+
+    operator fun inc(): Price {
+        return Price(value + 100)
+    }
+
+    operator fun dec(): Price {
+        return Price(value - 100)
+    }
+}
+var a = Price(500)
+println("value = ${a++}") // 결과 : Price(value=500)
+println("value = ${a}")   // 결과 : Price(value=600)
+println("value = ${++a}") // 결과 : Price(value=700)
+
+println("value = ${a--}") // 결과 : Price(value=700)
+println("value = ${a}")   // 결과 : Price(value=600)
+println("value = ${--a}") // 결과 : Price(value=500)
+```
+
+### 사칙 연산
+
+| 표현 | 함수 |
+| --- | --- |
+| a + b | a.plus(b) |
+| a - b | a.minus(b) |
+| a * b | a.times(b) |
+| a / b | a.div(b) |
+| a % b | a.rem(b) |
+| a += b | a.plusAssign(b) |
+| a -= b | a.minusAssign(b) |
+| a *= b | a.timesAssign(b) |
+| a /= b | a.divAssign(b) |
+| a %= b | a.remAssign(b) |
+
+```kotlin
+data class Price(val value: Int){
+   operator fun rem(b: Price): Price {
+     return Price(value + price.value)
+   }
+}
+
+val a = Price(500)
+val b = Price(499)
+println("rem = ${a % b}")    // 결과 : rem = Price(999)
+```
+
+### get / set
+
+```kotlin
+data class Price(var value: Int) {
+    operator fun get(num: Int): Int {
+        return value
+    }
+}
+
+val a = Price(500)        
+println("a_price = ${a[100/* dummy 숫자 */]}") // 결과 : a = 500
+```
+
+```kotlin
+data class Price(var value: Int) {
+
+    operator fun set(num: Int, value: Int) {
+        this.value = value
+    }
+}
+
+val a = Price(500)
+a[100] = 10
+println("a_price = ${a[100/* dummy 숫자 */]}") // 결과 : a = 10
+```
+
+### 생성자
+
+```kotlin
+data class Price private constructor(val value: Int) {
+
+    companion object {
+        operator fun invoke(): Price {
+            return Price(100)
+        }
+
+        operator fun invoke(value: Int): Price {
+            return Price(value)
+        }
+    }
+}
+
+val a = Price(500)
+println("a = $a") // 결과 : a = Price(500)
+
+val b = Price()
+println("b = $b") // 결과 : b = Price(100)
+```
