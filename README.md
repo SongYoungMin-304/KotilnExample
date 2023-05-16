@@ -942,3 +942,362 @@ fun testIt() {
 ```
 
 - 자식 클래스의 값을 부모클래스의 값으로 대입하고 있습니다. 따라서 초기화 순서에 의헤 code 에는 값이 "sabarada"가 아닌 null로 들어가게되며 사용함에 있어서 NPE가 발생하게 됩니다.
+
+# Scope Function
+
+Scope Function은 객체 컨텍스트 내에서 코드 블럭을 실행할 수 있도록 해줍니다. 즉, Scope Function 을 이용하면 객체의 정보를 기본적으로 가지고 있는 코드 블럭을 만들어 사용할 수 있어 간결한 코딩을 가능하게 해줌
+
+```kotlin
+class MappingService(
+    private var name: String, 
+    private var age: Int
+){
+
+   fun changeName(name: String){
+       this.name = name
+   }
+
+   fun incrementAge(){
+       age++
+   }
+
+   override fun toString(): String{
+        return "이름 = $name, 나이 = $age"
+   }
+}
+```
+
+```kotlin
+val mappingService = MappingService("sabarada", 15)
+println(mappingService) // 결과 : 이름 = sabarada, 나이 = 15
+
+mappingService.changeName("karol")
+mappingService.incrementAge()
+println(mappingService) // 결과 : 이름 = karol, 나이 = 18
+```
+
+Scope Functions 
+
+```kotlin
+MappingService("sabarada", 15).let{
+   println(it) // 결과 : 이름 = sabarada, 나이 = 15
+   it.changeName("karol"
+   it.incrementAge()
+   println(it) // 결과 : 이름 = karol, 나이 = 18
+}
+```
+
+### 용어 정리
+
+Scope Functions
+
+**let, run, with, apply, also**
+
+1) 컨테스트 객체를 참조하는 방법
+
+2) 반환 값
+
+3) 확장함수 
+
+여부에 따라 각각 다르게 사용되어집니다. 
+
+※ Scope Function 블럭은 람다(lambda) function 입니다. 이 람다는 파라미터로 2가지를 가지고 있슴
+
+(this, it) 해당 키워드를 통해 객체를 이용가능하게 되는 것
+
+둘의 커버할 수 있는 커버리지가 다르지는 않으며 단지 본인의 코딩 스타일에 따라서 선택하면 좋음
+
+### 컨테이스 객체를 참조하는 방법
+
+**let, also
+→ it를 통해서 context object를 참조, it는 this보다 짧으며 조금 더 읽기 쉽다는 게 장점,**
+
+→ 하지만 scope function block 안에 또다른 람다가 사용되어 it이 사용된다면 두개의 it을 구분짖기가 힘듭니다.
+
+```kotlin
+MappingService("sabarada", 15).let{
+   println(it) // 결과 : 이름 = sabarada, 나이 = 15
+   it.changeName("karol")
+   it.incrementAge()
+   println(it) // 결과 : 이름 = karol, 나이 = 18
+}
+```
+
+**run, with, apply**
+
+**→ this를 통해서 context object를 참조합니다. 그래서 사용할 때 class 내부에 있는 함수의 형식으로 사용하실 수 있습니다.** 
+
+→ 또한 this를 생략하는 것도 가능합니다. 
+
+→ 하지만 이럴 경우 외부 함수와 context object 함수의 구분이 어렵기 때문에 this는 붙이는 것을 추천
+
+```kotlin
+MappingService("sabarada", 15).run{
+   println(it) // 결과 : 이름 = sabarada, 나이 = 15
+   this.changeName("karol")
+   incrementAge() // this 생략
+   println(it) // 결과 : 이름 = karol, 나이 = 18
+}
+```
+
+- this: run, with, apply
+- it : let, also
+
+### 반환 값(Return value)
+
+- **apply, also는 context object를 반환합니다.**
+- 즉, scope function 을 호출 시킨 자기자신을 반환
+- 호출 시 call chaning을 이요할 수 있습니다.
+
+```kotlin
+MappingService("sabarada", 15)
+   .also{ println(it) } // 결과 : 이름 = sabarada, 나이 = 15
+   .also{ it.changeName("karol") }
+   .also{ it.incrementAge() }
+   .also{ println(it) } // 결과 : 이름 = karol, 나이 = 18
+```
+
+- **let, run, with 는 람다의 결과를 반환합니다.** 즉 scope function block에서 마지막 명령어의 결과를 반환합니다.
+- also로 call chaning을 하면서 마지막에 let을 통해서 println은 반환값을 가지지 않기 때문에 전체 call chaining 도 반환 값을 가지지 않도록 합니다.
+- 불필요한 객체 반환을 막는 것
+
+```kotlin
+MappingService("sabarada", 15)
+   .also{ println(it) } // 결과 : 이름 = sabarada, 나이 = 15
+   .also{ it.changeName("karol") }
+   .also{ it.incrementAge() }
+   .let{ println(it) } // 결과 : 이름 = karol, 나이 = 18
+```
+
+### 구현체
+
+→ 각 구현체들이 어떻게 구현하고 있는 지, 그리고 어디에서 사용하면 좋을지에 대해서 알아보자’
+
+**let**
+
+- let은 it을 파라미터로 사용하고 있습니다. 그리고 람다(lambda) 결과를 반환
+
+```kotlin
+val mappingService : MappingService? = createService() // nullable 한 함수!
+
+mappingService?.let { // mappingService 가 null 이 아닌 경우에만 let scope Function 실행
+     println(it) // 결과 : 이름 = karol, 나이 = 16
+    it.changeName("karol")
+    it.incrementAge()
+    println(it) // 결과 : 이름 = karol, 나이 = 16
+}
+```
+
+**run**
+
+- run은 this를 이용하여 접근이 가능합니다.
+- 람다 결과 반환
+
+```kotlin
+val objectString: String = MappingService("sabarada", 15).run {
+            this.incrementAge()
+            this.toString()
+        }
+
+println(objectString) // 결과 : 이름 = sabarada, 나이 = 16
+val resultString: String = run {
+    val first: String = "sabarada"
+    val second: String = "Karol"
+
+    "$first is $second"
+}
+
+println(resultString) // 결과 : sabarada is Karol
+```
+
+**with**
+
+- with는 확장 함수가 아닙니다.  with는 객체를 파라미터로 받습니다.
+- lambda function 내부에서는 this를 파라미터를 이용
+
+```kotlin
+val mappingList: List<MappingService> =
+    listOf(MappingService("sabarada", 15), MappingService("karol", 15))
+
+val sumValue = with(mappingList) {
+    var sumValue = 0
+    for (value in mappingList) {
+        sumValue += value.getAge()
+    }
+    sumValue
+}
+
+println(sumValue)
+```
+
+**apply**
+
+- apply는 this를 이용해서 해당 객체에 접근할 수 있습니다.
+- 객체 자체를 반환하는 특성
+
+```kotlin
+val mappingService: MappingService = MappingService("sabarada", 15)
+    .apply {
+        this.incrementAge()
+        this.incrementAge()
+    }
+
+println(mappingService) // 결과 : 이름 = sabarada, 나이 = 17
+```
+
+**also**
+
+- also는 it을 이용하여 객체접근이 가능하며 객체  자체를 반환
+- 일반적으로 call chaning
+
+```kotlin
+MappingService("sabarada", 15)
+    .also { println(it) } // 결과 : 이름 = karol, 나이 = 16
+    .also { it.changeName("karol") }
+    .also { it.incrementAge() }
+    .also { println(it) } // 결과 : 이름 = karol, 나이 = 16
+```
+
+**정리**
+
+| 함수 | 객체 참조 방법 | 반환 값 | 확장 함수 여부 |
+| --- | --- | --- | --- |
+| let | it | Lambda result | Yes |
+| run | this | Lambda result | Yes |
+| run | this | Lambda result | No: called without the context object |
+| with | this | Lambda result | No: takes the context object as an argument. |
+| apply | this | Context object | Yes |
+| also | it | Context object | Yes |
+
+# 연산자 오버로딩
+
+연산자 오버로딩이란 객체 지향 프로그래밍에서 다형성의 특별한 경우로 다른 연산자들이 함수 연산자를 통해서 구현을 할 때를 말한다.
+
+**- 이 말인 즉슨 +,- 등 과 같은 연산자가 어떤 값과 함께 사용하느냐에 따라서 다르게 동작할 수 있도록 그것을 커스터마이징 할 수 있다는 의미**
+
+- java에서도 연산자 오버로딩은 아니지만 같은 연산자에서 다르게 동작하는 예제가 있습니다.
+
+```kotlin
+String a ="sabarada is";
+String b = "karol";
+String result = a + " " + b; // sabarada is karol
+
+int c = 1;
+int d = 2;
+
+int result_2 = c + d //3
+```
+
+### 코틀린에서의 연산자 오버로딩
+
+```kotlin
+data class Price(val value: Int){
+   operator fun plus(b: Price): Price{
+        return Price(value + b.value)
+   }
+}
+
+val a: Price = Price(10)
+val b: Price = Price(50)
+val result: Price = a + b //결과 Price(60)
+
+```
+
+### 단항 연산자(Unary operations)
+
+```kotlin
+data class Price(val value: Int) {
+
+    operator fun inc(): Price {
+        return Price(value + 100)
+    }
+
+    operator fun dec(): Price {
+        return Price(value - 100)
+    }
+}
+var a = Price(500)
+println("value = ${a++}") // 결과 : Price(value=500)
+println("value = ${a}")   // 결과 : Price(value=600)
+println("value = ${++a}") // 결과 : Price(value=700)
+
+println("value = ${a--}") // 결과 : Price(value=700)
+println("value = ${a}")   // 결과 : Price(value=600)
+println("value = ${--a}") // 결과 : Price(value=500)
+```
+
+### 사칙 연산
+
+| 표현 | 함수 |
+| --- | --- |
+| a + b | a.plus(b) |
+| a - b | a.minus(b) |
+| a * b | a.times(b) |
+| a / b | a.div(b) |
+| a % b | a.rem(b) |
+| a += b | a.plusAssign(b) |
+| a -= b | a.minusAssign(b) |
+| a *= b | a.timesAssign(b) |
+| a /= b | a.divAssign(b) |
+| a %= b | a.remAssign(b) |
+
+```kotlin
+data class Price(val value: Int){
+   operator fun rem(b: Price): Price {
+     return Price(value + price.value)
+   }
+}
+
+val a = Price(500)
+val b = Price(499)
+println("rem = ${a % b}")    // 결과 : rem = Price(999)
+```
+
+### get / set
+
+```kotlin
+data class Price(var value: Int) {
+    operator fun get(num: Int): Int {
+        return value
+    }
+}
+
+val a = Price(500)        
+println("a_price = ${a[100/* dummy 숫자 */]}") // 결과 : a = 500
+```
+
+```kotlin
+data class Price(var value: Int) {
+
+    operator fun set(num: Int, value: Int) {
+        this.value = value
+    }
+}
+
+val a = Price(500)
+a[100] = 10
+println("a_price = ${a[100/* dummy 숫자 */]}") // 결과 : a = 10
+```
+
+### 생성자
+
+```kotlin
+data class Price private constructor(val value: Int) {
+
+    companion object {
+        operator fun invoke(): Price {
+            return Price(100)
+        }
+
+        operator fun invoke(value: Int): Price {
+            return Price(value)
+        }
+    }
+}
+
+val a = Price(500)
+println("a = $a") // 결과 : a = Price(500)
+
+val b = Price()
+println("b = $b") // 결과 : b = Price(100)
+```
