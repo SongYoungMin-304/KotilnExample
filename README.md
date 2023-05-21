@@ -1301,3 +1301,114 @@ println("a = $a") // 결과 : a = Price(500)
 val b = Price()
 println("b = $b") // 결과 : b = Price(100)
 ```
+
+
+
+# 인라인 함수와 reified 키워드
+- 인라인 키워드는 자바에서는 제공하지 않는 코틀린만의 키워드
+
+## 람다식을 사용했을 때 무의미한 객체 생성을 예방
+
+- 인라인 함수를 사용한다면 람다식을 사용했을 때 무의미한 객체 생성을 막을 수 있습니다.
+
+```kotlin
+fun doSomethingElse(lambda: () -> Unit){
+    println("Doing somethint else")
+    lambda()
+}
+```
+
+```java
+public static final void doSomethingElse(Function0 lambda) {
+    System.out.println("Doing something else");
+    lambda.invoke();
+}
+```
+
+```kotlin
+fun doSomething() {
+   println("Before lambada")
+   doSomethingElse {
+       println("inside lambda")
+   }
+   println("After lambda)
+}
+```
+
+```java
+public static final void doSomething() {
+    System.out.println("Before lambda");
+    doSomethingElse(new Function() {
+            public final void invoke() {
+            System.out.println("Inside lambda");
+        }
+    });
+    System.out.println("After lambda");
+}
+```
+
+- doSomehtingElse의 파라미터로 새로운 객체를 생성하여 넘겨준다
+- 즉 doSomething 이라는 메서드를 호출할 때마다 새로이 만들어집니다.(무의미하게 새로운 객체를 매번 생성)
+
+**인라인으로 변경한다면?**
+
+```kotlin
+inline fun doSomethingElse(lambda: () -> Unit){
+   println("Doing something else")
+   lambda()
+}
+```
+
+```java
+public static final void doSomething() {
+    System.out.println("Before lambda");
+    System.out.println("Doing something else");
+    System.out.println("Inside lambda");
+    System.out.println("After lambda");
+}
+```
+
+## 람다식에 로컬 변수 사용
+
+```kotlin
+fun doSomething() {
+    val greetings = "Hello"
+    doSomethingElse {
+        println("$greetings from lambda")
+    }
+}
+```
+
+```java
+public static final void doSomething() {
+   String greetings = "Hello";
+   doSomethingElse(new Function(greetings){
+      public final void invoke(){
+      System.out.println(this.$greetings + " from lambda");
+      }
+   });
+}
+```
+
+- 객체에 변수가 추가 되었음
+- 즉 객체의 메모리 사용량이 늘어남
+
+## reified 키워드
+
+```kotlin
+fun <T> doSomething(someValue: T)
+```
+
+```kotlin
+fun <T> doSomething(someValue: T, Class<T> type) { // runtime에서도 타입을 알 수 있게 Class<T> 넘김
+    println("Doing something with value: $someValue")               // OK
+    println("Doing something with type: ${T::class.simpleName}")    // Error
+}
+```
+
+```kotlin
+inline fun <reified T> doSomething(someValue: T) {
+    println("Doing something with value: $someValue")               // OK
+    println("Doing something with type: ${T::class.simpleName}")    // OK
+}
+```
